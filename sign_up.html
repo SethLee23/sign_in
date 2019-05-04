@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="/style.css">
+    <script src="https://cdn.bootcss.com/jquery/3.4.0/jquery.min.js"></script>
+    <style>
+    body{
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(to right, rgba(1,110,141,1) 0%,rgba(20,138,164,1) 24%,rgba(58,157,180,1) 50%,rgba(20,138,164,1) 78%,rgba(1,110,141,1) 100%);
+    }
+    .formWrapper{
+        display: flex;
+        flex-direction: column;
+        border:1px solid #ddd;
+        padding: 50px 30px;
+        /* justify-content: center;
+        align-items: center; */
+        background: #ddd;
+        box-shadow: 2px 2px 4px 2px rgba(0,0,0,0.7);
+        width: 350px;
+    }
+    h1{text-align: center;}
+    [value="submit"]{
+        text-align: center;
+        position: absolute;
+        left:50%;
+        transform: translateX(-50%);
+        border: 1px solid gray;
+        box-shadow: 1px 1px 2px 1px rgba(0,0,0,0.7);
+    }
+    input{margin: 10px 0;
+    outline: none;
+    background: #ddd;
+    border:0px;
+    border-bottom: 2px dashed rgb(6,117,147);
+    }
+    label{
+        display: inline-block;
+        width:4em;
+        }
+        .error{
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+    
+    <form id="signUpForm">
+            <div class="formWrapper">
+<h1>注册</h1>
+<div>
+<label>邮箱</label><input type="text" name="email"><span class="error"></span>
+</div>
+<div>
+<label>密码</label><input type="text" name="password"><span class="error"></span>
+</div>
+<div>
+<label>确认密码</label><input type="text" name="password_confirm"><span class="error"></span>
+</div>
+<div>
+<input type="submit" value="submit">
+</div>
+</div>
+</form>
+
+    <script src="./main.js"></script>
+    <script>
+//获取用户提交的数据并且将数据通过AJAX请求上传
+let hash = {}
+let $form = $('#signUpForm')
+$('#signUpForm').on('submit',(e)=>{
+    e.preventDefault()
+    let names = ['email','password','password_confirm']
+    names.forEach((name)=>{
+        //需要查看find用法
+       let value =  $('#signUpForm').find(`[name=${name}]`).val()
+       hash[name] = value
+    })
+    //以下验证表单,在post之前
+    //前面找到伪数组，元素的集合
+    //return后不执行,$(span)，找到span对象
+    $('#signUpForm').find('.error').each((index,span)=>{
+        $(span).text('')
+})
+    
+   
+    if(hash['email'] === ''){
+        $('#signUpForm').find('[name = "email"]').siblings('.error')
+        .text('请填写邮箱')
+        return
+    }
+    if(hash['password'] === ''){
+        $('#signUpForm').find('[name = "password"]').siblings('.error')
+        .text('请填写密码')
+        return
+    }
+    if(hash['password_confirm'] ===''){
+        $('#signUpForm').find('[name = "password_confirm"]').siblings('.error').text('请确认密码')
+        return
+    }
+    if(hash['password'] !== hash['password_confirm']){
+        $('#signUpForm').find('[name = "password_confirm"]').siblings('.error').text('密码不一致')
+        return
+    }
+    
+    $.post('/sign_up',hash)
+    .then((response)=>{
+        console.log(response)
+    },(a)=>{
+        // console.log(a.responseText)
+        // let {errors} = request.responseJSON
+        // console.log(errors)
+        let {errors} = JSON.parse(a.responseText)
+        console.log(errors)
+        if(errors.email && errors.email === 'invalid'){
+            // alert('你的邮箱输错了')
+            $('#signUpForm').find('[name=email]').siblings('.error')
+            .text('你的邮箱输错了')
+        }else if(errors.email === 'inUse'){
+            // alert('你的邮箱输错了')
+            $('#signUpForm').find('[name=email]').siblings('.error')
+            .text('邮箱被占用')
+        }
+    })
+})
+
+
+    </script>
+</body>
+
+</html>
